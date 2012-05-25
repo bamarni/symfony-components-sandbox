@@ -15,7 +15,7 @@ class NickNameType extends AbstractType
     public function getDefaultOptions()
     {
         return array(
-            'data_class' => 'Sandbox\Entity\Nickname',
+            'data_class' => 'Sandbox\Entity\NickName',
         );
     }
 

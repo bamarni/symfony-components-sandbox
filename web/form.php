@@ -8,8 +8,10 @@ $container = require_once __DIR__.'/../app/container.php';
 
 $request = HttpFoundation\Request::createFromGlobals();
 
+$person = new Sandbox\Entity\Person;
+
 $form = $container['form.factory']
-    ->createBuilder('form', new Sandbox\Entity\Person, array('cascade_validation' => true))
+    ->createBuilder('form', $person, array('cascade_validation' => true))
     ->add('name', 'text')
     ->add('gender', 'gender')
     ->add('nicknames', 'collection', array(
