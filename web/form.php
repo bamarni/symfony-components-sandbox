@@ -29,6 +29,7 @@ $form = $container['form.factory']
         'type' => new Sandbox\Form\Type\NickNameType,
         'allow_add' => true,
         'allow_delete' => true,
+        'prototype' => true,
     ))
     ->getForm()
 ;
@@ -63,7 +64,7 @@ $formView = $form->createView();
 
         <h3>NickNames</h3>
 
-        <ul class="nicknames" data-prototype="<?php echo $container['templating.engine']->escape($container['templating.engine']['form']->row($formView['nicknames']->get('prototype'))); ?>">
+        <ul class="nicknames" data-prototype="<?php echo $container['templating.engine']->escape($container['templating.engine']['form']->row($formView['nicknames']->getVar('prototype'))); ?>">
             <?php foreach($formView['nicknames'] as $nickName): ?>
                 <li class="nickname"><?php echo $container['templating.engine']['form']->row($nickName['value']) ?></li>
             <?php endforeach; ?>

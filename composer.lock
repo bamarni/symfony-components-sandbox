@@ -28,14 +28,14 @@
         {
             "package": "symfony/symfony",
             "version": "dev-master",
-            "source-reference": "023dbf809adf6d6b62c16cc8ae64ce9e670c20e8",
+            "source-reference": "ff4d446c5e93c3261853d8e0da7fd0e146e3d1c0",
             "alias-pretty-version": "2.1.x-dev",
             "alias-version": "2.1.9999999.9999999-dev"
         },
         {
             "package": "symfony/symfony",
             "version": "dev-master",
-            "source-reference": "023dbf809adf6d6b62c16cc8ae64ce9e670c20e8"
+            "source-reference": "ff4d446c5e93c3261853d8e0da7fd0e146e3d1c0"
         },
         {
             "package": "twig/twig",
