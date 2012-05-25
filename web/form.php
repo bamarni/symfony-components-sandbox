@@ -8,28 +8,14 @@ $container = require_once __DIR__.'/../app/container.php';
 
 $request = HttpFoundation\Request::createFromGlobals();
 
-$nickNames = array();
-
-foreach (array('Bibi', 'Bilou', 'Bil') as $value) {
-    $nickName = new Sandbox\Entity\NickName;
-    $nickName->value = $value;
-    
-    $nickNames[] = $nickName;
-}
-
-$person = new Sandbox\Entity\Person;
-$person->setName('Bilal');
-$person->setNickNames($nickNames);
-
 $form = $container['form.factory']
-    ->createBuilder('form', $person, array('cascade_validation' => true))
+    ->createBuilder('form', new Sandbox\Entity\Person, array('cascade_validation' => true))
     ->add('name', 'text')
     ->add('gender', 'gender')
     ->add('nicknames', 'collection', array(
         'type' => new Sandbox\Form\Type\NickNameType,
         'allow_add' => true,
         'allow_delete' => true,
-        'prototype' => true,
     ))
     ->getForm()
 ;
