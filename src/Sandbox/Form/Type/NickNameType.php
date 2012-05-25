@@ -4,6 +4,7 @@ namespace Sandbox\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class NickNameType extends AbstractType
 {
@@ -12,11 +13,11 @@ class NickNameType extends AbstractType
         $builder->add('value', 'text');
     }
 
-    public function getDefaultOptions()
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        return array(
+        $resolver->setDefaults(array(
             'data_class' => 'Sandbox\Entity\NickName',
-        );
+        ));
     }
 
     public function getName()
