@@ -1,121 +1,80 @@
 <?php
 
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+// Includes the autoloader and the container
 require_once __DIR__.'/../vendor/autoload.php';
-
-use Symfony\Component\HttpFoundation;
-
 $container = require_once __DIR__.'/../app/container.php';
 
-$request = HttpFoundation\Request::createFromGlobals();
+// Creates the request
+$request = Request::createFromGlobals();
 
-$person = new Sandbox\Entity\Person;
+// New email document
+$email = new Sandbox\Document\Email;
 
+// Creates the form
 $form = $container['form.factory']
-    ->createBuilder('form', $person, array('cascade_validation' => true))
-    ->add('name', 'text')
-    ->add('gender', 'gender')
-    ->add('nicknames', 'collection', array(
-        'type' => new Sandbox\Form\Type\NickNameType,
-        'allow_add' => true,
-        'allow_delete' => true,
-    ))
+    ->createBuilder('form', $email)
+    ->add('email', 'email')
+    ->add('subject', 'text')
+    ->add('content', 'textarea')
     ->getForm()
 ;
 
+$valid = null;
+
 if ('POST' === $request->getMethod()) {
     $form->bindRequest($request);
-    
-    if ($form->isValid()) {
-        $message = 'The form is valid.';
-    } else {
-        $message = 'The form is not valid.';
+
+    // If the form is valid
+    if ($valid = $form->isValid()) {
+        $m = new Mongo();
+        $db = $m->selectDB('mailer');
+
+        // The document is persisted
+        $db->mail->insert($email->toArray());
     }
 }
 
 // Form view
 $formView = $form->createView();
 
-// Rendering the form
+// Preparing the response
+ob_start();
 ?>
 
 <!DOCTYPE html>
 <html>
   <body>
+    <?php if (true === $valid): ?>
 
-    <h1>Form</h1>
+        <h3>Thanks for your message, we'll get back to you ASAP.</h3>
 
-    <form action="" method="post" novalidate="novalidate">
-        <?php echo isset($message) ? $message : '' ?>
+    <?php else : ?>
+        <h1>Form</h1>
 
-        <?php echo $container['templating.engine']['form']->row($formView['name']) ?>
-        <?php echo $container['templating.engine']['form']->row($formView['gender']) ?>
+        <form action="" method="post" novalidate="novalidate">
 
-        <h3>NickNames</h3>
+            <?php if (false === $valid): ?>
+                <h3>Formulaire invalide</h3>
+            <?php endif ?>
 
-        <ul class="nicknames" data-prototype="<?php echo $container['templating.engine']->escape($container['templating.engine']['form']->row($formView['nicknames']->getVar('prototype'))); ?>">
-            <?php foreach($formView['nicknames'] as $nickName): ?>
-                <li class="nickname"><?php echo $container['templating.engine']['form']->row($nickName['value']) ?></li>
-            <?php endforeach; ?>
-        </ul>
+            <?php echo $container['templating.engine']['form']->widget($formView) ?>
 
-        <input type="submit" value="OK" />
-    </form>
+            <input type="submit" value="OK" />
 
-
-    <script src="js/jquery.min.js"></script>
-    
-    <script>
-    // Get the div that holds the collection of tags
-    var collectionHolder = $('ul.nicknames');
-
-    // setup an "add a tag" link
-    var $addNickNameLink = $('<a href="#" class="add_nick_name_link">Add a nickname</a>');
-    var $newLinkLi = $('<li></li>').append($addNickNameLink);
-
-    jQuery(document).ready(function() {
-        collectionHolder.find('li.nickname').each(function() {
-            addNickNameFormDeleteLink($(this));
-        });
-        // add the "add a tag" anchor and li to the tags ul
-        collectionHolder.append($newLinkLi);
-
-        $addNickNameLink.on('click', function(e) {
-            // prevent the link from creating a "#" on the URL
-            e.preventDefault();
-
-            // add a new tag form (see next code block)
-            addNickNameForm(collectionHolder, $newLinkLi);
-            addNickNameFormDeleteLink($newFormLi);
-        });
-    });
-
-    function addNickNameForm(collectionHolder, $newLinkLi) {
-        // Get the data-prototype we explained earlier
-        var prototype = collectionHolder.attr('data-prototype');
-
-        // Replace '__name__' in the prototype's HTML to
-        // instead be a number based on the current collection's length.
-        var newForm = prototype.replace(/__name__label__/g, '');
-        newForm = newForm.replace(/__name__/g, collectionHolder.children().length);
-
-        // Display the form in the page in an li, before the "Add a tag" link li
-        var $newFormLi = $('<li></li>').append(newForm);
-        $newLinkLi.before($newFormLi);
-    }
-
-    function addNickNameFormDeleteLink($nickNameFormLi) {
-        var $removeFormA = $('<a href="#">delete this nickname</a>');
-        $nickNameFormLi.append($removeFormA);
-
-        $removeFormA.on('click', function(e) {
-            // prevent the link from creating a "#" on the URL
-            e.preventDefault();
-
-            // remove the li for the tag form
-            $nickNameFormLi.remove();
-        });
-    }
-    </script>
-
+        </form>
+    <?php endif ?>
   </body>
 </html>
+
+<?php
+
+$content = ob_get_clean();
+$status = (true === $valid) ? 202 : 200; // Status code 202 if document created, 200 otherwise
+
+$response = new Response($content, $status);
+
+// Sends the response to the client
+$response->send();
